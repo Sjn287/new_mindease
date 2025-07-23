@@ -110,8 +110,27 @@ input[type="password"] {
   background-color: #553c9a;
 }
 
-/* Add your illustration image style if needed */
 .illustration {
   width: 70%;
   max-width: 400px;
+}
+.passwordField {
+  position: relative;
+  display: flex;
+}
+
+.passwordField input {
+  flex: 1;
+}
+
+.showButton {
+  color: #666567;
+  background: none;
+  border: none;
+  position: absolute;
+  right: 8px;
+  top: 32%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.1rem;
 }
