@@ -63,7 +63,7 @@ function SignUpPage() {
   })
     .then(() => {
       alert("User signed up successfully!");
-      navigate("/login");
+      navigate("/");
     })
     .catch((error) => {
       console.error(error);
