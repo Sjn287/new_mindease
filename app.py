@@ -3,7 +3,7 @@ from chatbotbackend import chatbot_response  # assuming your chatbot code is sav
 
 st.set_page_config(page_title="MindEase+ Chatbot", page_icon="🧠")
 
-st.title("🧠 MindEase+ - Your Mental Health Companion")
+st.title("🧠 MindEase+ ")
 
 st.markdown("""
 Welcome to **MindEase+**, your AI companion for mental well-being.
