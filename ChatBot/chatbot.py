@@ -1,5 +1,5 @@
 import streamlit as st
-from app import chatbot_response  # assuming your chatbot code is saved in chatbot_backend.py
+from ChatBot.app import chatbot_response  # assuming your chatbot code is saved in chatbot_backend.py
 
 st.set_page_config(page_title="MindEase+ Chatbot", page_icon="🧠")
 
