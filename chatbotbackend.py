@@ -6,7 +6,7 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 
 # Load environment variables
-load_dotenv()
+
 
 # Set up logging
 logging.basicConfig(filename="chatbot_logs.txt", level=logging.INFO, format="%(asctime)s - %(message)s")

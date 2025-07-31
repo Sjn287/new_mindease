@@ -48,3 +48,23 @@ To download the necessary data, simply run
 or use the NLTK downloader to download the missing data: http://nltk.org/data.html
 If this doesn't fix the problem, file an issue at https://github.com/sloria/TextBlob/issues.
 
+2025-07-31 20:15:01,830 - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-31 20:15:01,869 - User Query: i feel sad
+Bot Reply: I'm so sorry to hear that you're feeling sad. It's completely normal to feel this way, and I'm here to support you. Would you like to talk about what's been going on that's making you feel sad? Sometimes sharing your feelings with someone who cares can help you feel a bit better. I'm all ears and here to listen without judgment.
+
+2025-07-31 20:23:57,568 - Retrying request to /openai/v1/chat/completions in 0.475816 seconds
+2025-07-31 20:23:58,047 - Retrying request to /openai/v1/chat/completions in 0.778071 seconds
+2025-07-31 20:23:58,828 - Error processing query: i feel sad | Error: Connection error.
+2025-07-31 20:24:51,959 - Retrying request to /openai/v1/chat/completions in 0.459427 seconds
+2025-07-31 20:24:52,422 - Retrying request to /openai/v1/chat/completions in 0.880876 seconds
+2025-07-31 20:24:53,307 - Error processing query: i feel sad | Error: Connection error.
+2025-07-31 20:31:36,241 - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-31 20:31:36,270 - User Query: i feel sad
+Bot Reply: I'm so sorry to hear that you're feeling sad. It's completely normal to experience a range of emotions, and it takes a lot of courage to acknowledge and share your feelings.
+
+Firstly, please know that you're not alone in this feeling. Sadness is a common and valid emotion that can affect anyone, regardless of their background, circumstances, or personality. It's okay to feel sad, and it doesn't mean that there's anything wrong with you.
+
+Can you tell me a bit more about what's been going on that's making you feel sad? Is it related to a specific event, person, or situation, or is it more of a general feeling? Sometimes talking about what's on your mind can help you process and release some of those emotions.
+
+Remember, I'm here to listen and support you without judgment. You're safe to share as much or as little as you like.
+
