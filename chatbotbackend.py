@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 from textblob import TextBlob
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
-
+import nltk
 # Load from .env if not hardcoding (recommended)
-load_dotenv()
+nltk.download('punkt')
 
 # Initialize Groq LLM safely
 try:
