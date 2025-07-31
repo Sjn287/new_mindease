@@ -21,12 +21,12 @@ except Exception as init_error:
 
 # Prompt Template
 template = PromptTemplate.from_template("""
-You are MindEase+, a supportive and compassionate mental health companion.
-Listen to the user, understand their emotions, and provide empathetic responses and helpful advice.
+You are MindEase+, an AI mental health companion. Respond with short, supportive, and meaningful replies (3-4 lines max). Be empathetic, but keep it concise.
 
 User: {question}
 MindEase+:
 """)
+
 
 # Rule-based response
 def rule_based_response(query):
