@@ -1,85 +1,101 @@
 import os
-import logging
-from dotenv import load_dotenv
-from textblob import TextBlob
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
+from textblob import TextBlob
+from dotenv import load_dotenv
 
-# Load environment variables
+load_dotenv()
 
-
-# Set up logging
-logging.basicConfig(filename="chatbot_logs.txt", level=logging.INFO, format="%(asctime)s - %(message)s")
-
-# Initialize Groq LLaMA3 model
+# Setup LLM
 llm = ChatGroq(
+    temperature=0.7,
     api_key="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",
-    temperature=0.5,
     model_name="llama3-8b-8192"
 )
 
-# Define prompt template
-template = PromptTemplate.from_template("""
-You are MindEase, a caring, intelligent, and helpful mental health assistant.
-Always reply to the user's message with empathy, support, and helpful guidance.
-Provide real, informative, and non-repetitive answers.
+# Create chatbot prompt
+prompt = PromptTemplate.from_template(
+    """
+    You are MindEase, a CBT-based AI therapist trained to support users facing stress, anxiety, and overthinking.
 
-User: {question}
-MindEase:
-""")
+    ### USER INPUT:
+    {user_input}
 
-# Rule-based quick response system
-def rule_based_response(query):
-    q = query.lower()
+    ### INSTRUCTION:
+    Gently ask guiding questions, reflect emotions, and suggest techniques such as journaling, grounding, or reframing thoughts.
+    Be warm, helpful, and avoid sounding robotic.
+    """
+)
+chain = prompt | llm
 
-    if any(word in q for word in ["emergency", "suicide", "urgent", "immediately"]):
-        return "⚠️ If you're in an emergency or experiencing suicidal thoughts, please contact a mental health professional or call your country's emergency number immediately. You're not alone."
+# Sentiment analysis setup
+def detect_sentiment(text):
+    blob = TextBlob(text)
+    polarity = blob.sentiment.polarity
+    if polarity < -0.2:
+        return "negative"
+    elif polarity > 0.2:
+        return "positive"
+    else:
+        return "neutral"
 
-    if "hello" in q or "hi" in q:
-        return "Hello! I'm MindEase 😊. How can I support you today?"
 
-    if "thank you" in q or "thanks" in q:
-        return "You're always welcome. I'm here for you anytime 💛."
+faq = {
+    "i feel stressed": "It's okay to feel this way. Try taking deep breaths or journaling your thoughts.",
+    "how to deal with anxiety": "Start with grounding techniques like 5-4-3-2-1. Would you like more suggestions?",
+    "i can't sleep": "Avoid screens at night, try calming music, or practice deep breathing exercises."
+}
 
-    if "who are you" in q:
-        return "I'm MindEase, your AI-powered mental wellness companion, here to support your emotional well-being."
+def rule_based_response(user_input):
+    for key in faq:
+        if key in user_input.lower():
+            return faq[key]
+    return None
 
-    return None  # No rule matched
+def get_short_response():
+    return (
+        "I'm really sorry you're feeling this way. It's okay to feel sad, and you're not alone.\n\n"
+        "I'm here to listen — would you like to share what's been on your mind lately?\n\n"
+        "Sometimes writing down your thoughts can help bring a little clarity. If you're open to it, we can explore what you're feeling together.\n\n"
+        "You're doing your best, and that matters. 💙"
+    )
 
-# Check if the question is valid
-def is_valid_query(query):
-    blob = TextBlob(query)
-    return len(blob.words) >= 2
+def chatbot_response(user_input):
+    # 1. First check rule-based FAQs
+    faq_reply = rule_based_response(user_input)
+    if faq_reply:
+        return faq_reply
 
-# Generate response from LLM
-def generate_llm_response(query):
-    prompt = template.format(question=query)
-    return llm.invoke(prompt).content.strip()
+    # 2. Safety Filter for crisis-related inputs
+    crisis_keywords = [
+        'suicide', 'kill myself', 'want to die', 'end my life',
+        'cutting', 'self-harm', 'depressed', 'hopeless', 'overwhelmed'
+    ]
+    if any(keyword in user_input.lower() for keyword in crisis_keywords):
+        return (
+            "💙 I'm really sorry you're feeling this way. You're not alone.\n\n"
+            "*Please consider reaching out to a professional or support line:*\n"
+            "- *India (iCall): +91 9152987821*\n"
+            "- *AASRA (Mumbai): +91 9820466726*\n"
+            "- *International Help:* https://www.befrienders.org\n\n"
+            "You matter, and support is available. 💙"
+        )
 
-# Main chatbot response function
-def chatbot_response(query):
-    try:
-        query = query.strip()
-        if not is_valid_query(query):
-            return "Could you please provide more context or details so I can better assist you?"
+    # 3. Sentiment Detection
+    mood = detect_sentiment(user_input)
+    if mood == "negative":
+        user_input = "User is feeling low. Respond with extra empathy. Keep the response under 100 words.\n" + user_input
 
-        # Check rule-based answers
-        rule_response = rule_based_response(query)
-        if rule_response:
-            return rule_response
+    # 4. Final LLM Response
+    response = chain.invoke({"user_input": user_input}).content
 
-        # Query LLM
-        llm_response = generate_llm_response(query)
+    # 5. Length check – fallback to short, empathetic version
+    if len(response) > 400:
+        return get_short_response()
 
-        # If LLM responds poorly, use fallback
-        if not llm_response or "I don’t understand" in llm_response.lower():
-            return "I'm here to help, but I didn’t fully understand that. Could you rephrase or explain a bit more?"
+    return response
 
-        # Log successful query
-        logging.info(f"User Query: {query}\nBot Reply: {llm_response}\n")
-        return llm_response
 
-    except Exception as e:
-        logging.error(f"Error processing query: {query} | Error: {str(e)}")
-        return "I'm facing a temporary issue understanding your request. Please try again shortly."
-
+# Example usage
+user_message = "I am sad"
+chatbot_response(user_message)
