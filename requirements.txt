@@ -3,4 +3,3 @@ langchain
 langchain_groq
 textblob
 python-dotenv
-nltk
