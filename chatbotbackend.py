@@ -1,20 +1,16 @@
-import os
 import streamlit as st
+from textblob import TextBlob
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
-from textblob import TextBlob
 
-# Use API key directly for testing (do NOT do this in production)
-api_key = "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"
-
-# Setup LLM
+# === Initialize ChatGroq LLM ===
 llm = ChatGroq(
     temperature=0.7,
-    api_key=api_key,
+    api_key="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",
     model_name="llama3-8b-8192"
 )
 
-# Prompt template
+# === Prompt Template ===
 prompt = PromptTemplate.from_template(
     """
     You are MindEase, a CBT-based AI therapist trained to support users facing stress, anxiety, and overthinking.
@@ -29,17 +25,16 @@ prompt = PromptTemplate.from_template(
 )
 chain = prompt | llm
 
-# Sentiment detection
+# === Sentiment Analysis ===
 def detect_sentiment(text):
-    blob = TextBlob(text)
-    polarity = blob.sentiment.polarity
+    polarity = TextBlob(text).sentiment.polarity
     if polarity < -0.2:
         return "negative"
     elif polarity > 0.2:
         return "positive"
     return "neutral"
 
-# Rule-based responses
+# === Rule-Based Responses ===
 faq = {
     "i feel stressed": "It's okay to feel this way. Try taking deep breaths or journaling your thoughts.",
     "how to deal with anxiety": "Start with grounding techniques like 5-4-3-2-1. Would you like more suggestions?",
@@ -61,51 +56,54 @@ def get_short_response():
     )
 
 def chatbot_response(user_input):
-    try:
-        # 1. Rule-based reply
-        faq_reply = rule_based_response(user_input)
-        if faq_reply:
-            return faq_reply
+    faq_reply = rule_based_response(user_input)
+    if faq_reply:
+        return faq_reply
 
-        # 2. Safety Filter
-        crisis_keywords = [
-            'suicide', 'kill myself', 'want to die', 'end my life',
-            'cutting', 'self-harm', 'depressed', 'hopeless', 'overwhelmed'
-        ]
-        if any(keyword in user_input.lower() for keyword in crisis_keywords):
-            return (
-                "💙 I'm really sorry you're feeling this way. You're not alone.\n\n"
-                "*Please consider reaching out to a professional or support line:*\n"
-                "- *India (iCall): +91 9152987821*\n"
-                "- *AASRA (Mumbai): +91 9820466726*\n"
-                "- *International Help:* https://www.befrienders.org\n\n"
-                "You matter, and support is available. 💙"
-            )
+    crisis_keywords = [
+        'suicide', 'kill myself', 'want to die', 'end my life',
+        'cutting', 'self-harm', 'depressed', 'hopeless', 'overwhelmed'
+    ]
+    if any(keyword in user_input.lower() for keyword in crisis_keywords):
+        return (
+            "💙 I'm really sorry you're feeling this way. You're not alone.\n\n"
+            "*Please consider reaching out to a professional or support line:*\n"
+            "- *India (iCall): +91 9152987821*\n"
+            "- *AASRA (Mumbai): +91 9820466726*\n"
+            "- *International Help:* https://www.befrienders.org\n\n"
+            "You matter, and support is available. 💙"
+        )
 
-        # 3. Sentiment detection
-        mood = detect_sentiment(user_input)
-        if mood == "negative":
-            user_input = "User is feeling low. Respond with extra empathy. Keep the response under 100 words.\n" + user_input
+    if detect_sentiment(user_input) == "negative":
+        user_input = "User is feeling low. Respond with extra empathy. Keep the response under 100 words.\n" + user_input
 
-        # 4. LLM response
-        response_obj = chain.invoke({"user_input": user_input})
-        if not response_obj or not hasattr(response_obj, 'content'):
-            return get_short_response()
+    response = chain.invoke({"user_input": user_input}).content
 
-        response = response_obj.content.strip()
-        if len(response) > 400:
-            return get_short_response()
+    if len(response) > 400:
+        return get_short_response()
 
-        return response
+    return response
 
-    except Exception as e:
-        st.error(f"[ERROR]: {str(e)}")
-        return "Sorry, I'm having trouble responding right now. Please try again shortly."
+# === Streamlit UI ===
+st.set_page_config(page_title="MindEase - Mental Health Chatbot", layout="centered", page_icon="🧠")
 
-# Streamlit interface
-st.title("🧠 MindEase - Mental Health Chatbot")
-user_input = st.text_input("How are you feeling today?")
+st.markdown("## 🧠 MindEase - Mental Health Chatbot")
+st.markdown("How are you feeling today?")
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display past messages
+for message in st.session_state.messages:
+    role = "🧑‍💬 You" if message["role"] == "user" else "🤖 MindEase"
+    st.markdown(f"**{role}:** {message['content']}")
+
+# Input box
+user_input = st.text_input("Your message", label_visibility="collapsed")
 
 if user_input:
-    reply = chatbot_response(user_input)
-    st.write("💬", reply)
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    bot_reply = chatbot_response(user_input)
+    st.session_state.messages.append({"role": "bot", "content": bot_reply})
+    st.experimental_rerun()
